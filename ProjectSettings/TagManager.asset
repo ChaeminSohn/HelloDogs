@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - modelObject
+  - modelObject_Head
+  - modelObject_Script
   layers:
   - Default
   - TransparentFX
