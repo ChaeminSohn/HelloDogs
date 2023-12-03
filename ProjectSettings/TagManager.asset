@@ -7,6 +7,7 @@ TagManager:
   - modelObject
   - modelObject_Head
   - modelObject_Script
+  - Ball
   layers:
   - Default
   - TransparentFX
