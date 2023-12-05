@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class DogCtrl : MonoBehaviour { 
     public enum State
     {
         STAND, SIT, LIE, LIEDOWN, WALK, RUN, EAT
     }
-
+    [SerializeField]
+    private GameObject defaultPlane;
+    [SerializeField]
+    private GameObject tennisBall;
+    [SerializeField]
+    private GameObject mouseHold;
     private Camera m_Camera;
     public State state = State.STAND;
     public float runSpeed = 3.0f;
@@ -26,31 +31,37 @@ public class DogCtrl : MonoBehaviour {
     private readonly int hashLie = Animator.StringToHash("isLie");
     private readonly int hashLieDown = Animator.StringToHash("isLieDown");
     private readonly int hashWalk = Animator.StringToHash("isWalk");
-    private readonly int hashRun = Animator.StringToHash("isRun");
+    private readonly int hashRun = Animator.StringToHash("isRun");    
+    private readonly int hashEat = Animator.StringToHash("isEat");
     private readonly int hashIdleIndex = Animator.StringToHash("idleIndex");
 
-
-    public GameObject startingPoint;
+    private GameObject mainPlane;
+    private GameObject startingPoint;
     private Rig headRig;
-    public Transform followTarget;
+    public GameObject followTarget;
+    private Transform followTargetTr;
+    private GameObject dogBowl;
     public GameObject head;
     public GameObject body;
     void Awake()
     {
         m_Camera = Camera.main;
         anim = GetComponent<Animator>();
-
         headRig = headRigObj.GetComponentInChildren<Rig>();
-        StartCoroutine(DogAction());
-        //startingPoint.transform.position = this.transform.position;
+        startingPoint = GameObject.FindGameObjectWithTag("StartPoint");
+        startingPoint.transform.position = this.transform.position;
+        anim.SetBool(hashidle, true);   
         anim.SetBool(hashStand, true);
         anim.SetInteger(hashIdleIndex, -1);
+        headRig.weight = 1.0f;
+        mainPlane = Instantiate(defaultPlane, this.transform.position, Quaternion.identity);
+        StartCoroutine(DogAction());
     }
 
     private void Update()
     {
         lookTarget.transform.position = m_Camera.transform.position;
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        /*if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             GiveOrder("SitDown");
         }
@@ -60,32 +71,55 @@ public class DogCtrl : MonoBehaviour {
         }
         else if(Input.GetMouseButton(1)) 
         {
-            GiveOrder("Fetch");
-        }
+            //GiveOrder("Fetch");
+        }*/
+        mainPlane.transform.position = transform.position;
     }
 
     public void GiveOrder(string order)
     {
         switch (order)
         {
+            case "Stand":
+                if (anim.GetInteger(hashIdleIndex) == -2)
+                    return;
+                anim.SetInteger(hashIdleIndex, -1);
+                state = State.STAND;
+                break;
             case "SitDown":
-                //if (anim.GetInteger(hashIdleIndex) == -2)
-                   // return;
+                if (anim.GetInteger(hashIdleIndex) == -2)
+                    return;
                 anim.SetInteger(hashIdleIndex, 0);
                 state = State.SIT;
                 break;
 
             case "Lie":
+                if (anim.GetInteger(hashIdleIndex) == -2)
+                    return;
                 anim.SetInteger(hashIdleIndex, Random.Range(1, 7));
                 state = State.LIE;
                 break;
             case "Fetch":
                 state = State.RUN;
                 anim.SetInteger(hashIdleIndex, -2);
-                followTarget = GameObject.FindGameObjectWithTag("Ball").transform;
+                followTarget = GameObject.FindGameObjectWithTag("Ball");
+                followTargetTr = followTarget.transform;
                 anim.SetBool(hashidle, false);
                 headRig.weight = 0.0f;
                 anim.SetBool(hashRun, true);
+                break;
+            case "Eat":
+                if (anim.GetInteger(hashIdleIndex) == -2)
+                    return;
+                dogBowl = GameObject.FindGameObjectWithTag("Bowl");
+                if (dogBowl != null)
+                {
+                    state = State.EAT;
+                    anim.SetInteger(hashIdleIndex, -2);
+                    anim.SetBool(hashidle, false);
+                    anim.SetBool(hashEat, true);
+                    headRig.weight = 0.0f;
+                }
                 break;
         }
     }
@@ -97,17 +131,30 @@ public class DogCtrl : MonoBehaviour {
             switch (state)
             {
                 case State.STAND:
-                    anim.SetBool(hashidle, true);
-                    
+                    if (!anim.GetBool(hashStand))
+                    {
+                        while (anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f) {
+                            yield return new WaitForSeconds(0.1f);
+                        }
+                        anim.SetBool(hashidle, false);
+                 
+                        anim.SetBool(hashStand, true);
+                        anim.SetBool(hashidle, true);
+                        anim.SetBool(hashLie, false);
+                        anim.SetBool(hashLieDown, false);
+                        anim.SetBool(hashSit, false);
+                    }
+                    if (timeCnt >= 30.0f)
+                    {
+                        anim.SetInteger(hashIdleIndex, -1);
+                        timeCnt = 0;
+                    }
                     break;
                 case State.SIT:
                     if (!anim.GetBool(hashSit))
                     {
                         anim.SetBool(hashidle, false);
-                        while (anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f) 
-                        { 
-                             yield return new WaitForSeconds(1.0f);
-                        }
+                  
                         anim.SetBool(hashSit, true);
                         anim.SetBool(hashidle, true);
                         anim.SetBool(hashLie, false);
@@ -125,17 +172,14 @@ public class DogCtrl : MonoBehaviour {
                     if (!anim.GetBool(hashLie))
                     {
                         anim.SetBool(hashidle, false);
-                        while (anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
-                        {
-                            yield return new WaitForSeconds(1.0f);
-                        }
+               
                         anim.SetBool(hashLie, true);
                         anim.SetBool(hashidle, true);
                         anim.SetBool(hashSit, false);
                         anim.SetBool(hashLieDown, false);
                         anim.SetBool(hashStand, false);
                     }
-                    if (timeCnt >= 10.0f)
+                    if (timeCnt >= 30.0f)
                     {
                         anim.SetInteger(hashIdleIndex, Random.Range(1,13));
                         if (anim.GetInteger(hashIdleIndex) >= 7)
@@ -149,17 +193,14 @@ public class DogCtrl : MonoBehaviour {
                     if (!anim.GetBool(hashLieDown))
                     {
                         anim.SetBool(hashidle, false);
-                        while (anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
-                        {
-                            yield return new WaitForSeconds(1.0f);
-                        }
+               
                         anim.SetBool(hashLieDown, true);
                         anim.SetBool(hashidle, true);
                         anim.SetBool(hashSit, false);
                         anim.SetBool(hashLie, false);
                         anim.SetBool(hashStand, false);
                     }
-                    if (timeCnt >= 10.0f)
+                    if (timeCnt >= 30.0f)
                     {
                         anim.SetInteger(hashIdleIndex, Random.Range(1, 13));
                         if (anim.GetInteger(hashIdleIndex) < 7)
@@ -168,34 +209,77 @@ public class DogCtrl : MonoBehaviour {
                     }
                     break;
                 case State.WALK:
-                    float walk_distance = Vector3.Distance(followTarget.transform.position, this.transform.position);
-                    transform.LookAt(followTarget.transform);
-
-                    if (walk_distance >= 0.1f)
+                    GameObject ballInstance = Instantiate(tennisBall, mouseHold.transform.position, Quaternion.identity);
+                    ballInstance.transform.parent = mouseHold.transform;
+                    if (!anim.GetBool(hashWalk))
                     {
-                        transform.position = Vector3.Lerp(transform.position, followTarget.position, Time.deltaTime * walkSpeed);
-                    }
-                    else
-                    {
-                        anim.SetBool(hashWalk, false);
-                        state = State.STAND;
-                    }
-                    break;
-                case State.RUN:
-                    float run_distance = Vector3.Distance(followTarget.transform.position, this.transform.position);
-                    transform.LookAt(followTarget.transform);
-
-                    if (run_distance >= 1f)
-                    {
-                        transform.position = Vector3.Lerp(transform.position, followTarget.position, Time.deltaTime * runSpeed);
-                    }
-                    else
-                    {
-                        state = State.WALK;
-                        followTarget = startingPoint.transform;
-                        anim.SetBool(hashRun, false);
+                        followTarget = startingPoint;
+                        followTargetTr = followTarget.transform;
                         anim.SetBool(hashWalk, true);
                     }
+                    float walk_distance = Vector3.Distance(followTargetTr.position, this.transform.position);
+                    transform.LookAt(followTargetTr);
+
+                    while (walk_distance >= 0.2f)
+                    {
+                        transform.position = Vector3.Lerp(transform.position, followTargetTr.position, Time.deltaTime * walkSpeed);
+                        yield return new WaitForSeconds(0.1f);
+                        walk_distance = Vector3.Distance(followTargetTr.position, this.transform.position);
+                    }
+                    Destroy(ballInstance);  
+                    anim.SetBool(hashWalk, false);
+                    anim.SetInteger(hashIdleIndex, -1);
+                    anim.SetBool(hashidle, true);
+                    state = State.STAND;
+                    GameObject.FindGameObjectWithTag("ButtonControl")?.
+                        GetComponentInChildren<ButtonCtrl>()?.BallButtonOn();
+                    headRig.weight = 1.0f;
+                    GameManager.intimacy += 0.1f;
+                    break;
+                case State.RUN:
+                    float run_distance = Vector3.Distance(followTargetTr.position, this.transform.position);
+                    transform.LookAt(followTargetTr);
+
+                    while (run_distance >= 0.2f)
+                    {
+                        transform.position = Vector3.Lerp(transform.position, followTargetTr.position, Time.deltaTime * runSpeed);
+                        yield return new WaitForSeconds(0.1f);
+                        run_distance = Vector3.Distance(followTargetTr.position, this.transform.position);
+                    }
+                    anim.SetBool(hashRun, false);
+                    Destroy(followTarget);
+                    state = State.WALK;
+                    yield return new WaitForSeconds(3.0f);
+                    break;
+                case State.EAT:
+                    float distance = Vector3.Distance(dogBowl.transform.position, this.transform.position);
+                    transform.LookAt(dogBowl.transform);
+                    while (distance >= 0.2f)
+                    {
+                        anim.SetBool(hashWalk, true);
+                        transform.position = Vector3.Lerp(transform.position, dogBowl.transform.position, Time.deltaTime * walkSpeed);
+                        yield return new WaitForSeconds(0.1f);
+                        distance = Vector3.Distance(dogBowl.transform.position, this.transform.position);
+                    }
+                    anim.SetBool(hashWalk, false);
+                    yield return new WaitForSeconds(6.0f);
+                    anim.SetBool(hashEat, false);
+                    transform.LookAt(startingPoint.transform);
+                    distance = Vector3.Distance(startingPoint.transform.position, this.transform.position);
+                    while (distance >= 0.2f)
+                    {
+                        transform.position = Vector3.Lerp(transform.position, startingPoint.transform.position, Time.deltaTime * walkSpeed);
+                        yield return new WaitForSeconds(0.1f);
+                        distance = Vector3.Distance(startingPoint.transform.position, this.transform.position);
+                    }
+                    
+                    headRig.weight = 1.0f;
+                    anim.SetBool(hashWalk, false);
+                    anim.SetInteger(hashIdleIndex, -1);
+                    anim.SetBool(hashidle, true);
+                    
+                    state = State.STAND;
+                    GameManager.intimacy += 0.2f;
                     break;
                 default:
                     break;
@@ -206,21 +290,4 @@ public class DogCtrl : MonoBehaviour {
             yield return new WaitForSeconds(0.1f);
         }
     }
-
-    void FollowTarget()
-    {
-        float distance = Vector3.Distance(followTarget.transform.position, this.transform.position);
-
-        if(distance >= 1.0f)
-        {
-            transform.position = Vector3.Lerp(transform.position, followTarget.transform.position, Time.deltaTime * runSpeed);
-        }
-        else
-        {
-            state = State.WALK;
-        }
-    }
-
-   
-
 }

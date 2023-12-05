@@ -8,6 +8,9 @@ TagManager:
   - modelObject_Head
   - modelObject_Script
   - Ball
+  - StartPoint
+  - ButtonControl
+  - Bowl
   layers:
   - Default
   - TransparentFX
