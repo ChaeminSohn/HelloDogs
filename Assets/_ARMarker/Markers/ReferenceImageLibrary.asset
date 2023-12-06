@@ -21,19 +21,19 @@ MonoBehaviour:
       m_GuidLow: 5685776361822410046
       m_GuidHigh: 14734689320685630384
     m_SerializedTextureGuid:
-      m_GuidLow: 4711916501246862753
-      m_GuidHigh: 13704363768533677336
+      m_GuidLow: 8855270579264236610
+      m_GuidHigh: 6539677759825617417
     m_Size: {x: 0, y: 0}
     m_SpecifySize: 0
     m_Name: HuskyDog
-    m_Texture: {fileID: 2800000, guid: d41ee5a11717416418f52e183dae2fbe, type: 3}
+    m_Texture: {fileID: 2800000, guid: b3032c423dac7ae409a2ed1b469ac15a, type: 3}
   - m_SerializedGuid:
       m_GuidLow: 5620594387274000190
       m_GuidHigh: 16239494411674538631
     m_SerializedTextureGuid:
-      m_GuidLow: 10724333043597375095
-      m_GuidHigh: 8170232768677889979
+      m_GuidLow: 3671604654784895092
+      m_GuidHigh: 16375173759392696952
     m_Size: {x: 0, y: 0}
     m_SpecifySize: 0
     m_Name: DogBowl
-    m_Texture: {fileID: 2800000, guid: 4c9af6777c1594d4bb474d556a7f6271, type: 3}
+    m_Texture: {fileID: 2800000, guid: 041fd87428fb32f4784ae657c64d40e3, type: 3}

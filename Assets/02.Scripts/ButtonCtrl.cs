@@ -35,6 +35,8 @@ public class ButtonCtrl : MonoBehaviour
 
     GameObject mainDog;
 
+    private TouchScreenKeyboard keyboard;
+
     void Start()
     {
         infoButton.onClick.AddListener(() => OnInfoButtonClick());
