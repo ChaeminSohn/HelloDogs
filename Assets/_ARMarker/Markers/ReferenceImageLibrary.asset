@@ -21,12 +21,12 @@ MonoBehaviour:
       m_GuidLow: 5685776361822410046
       m_GuidHigh: 14734689320685630384
     m_SerializedTextureGuid:
-      m_GuidLow: 8855270579264236610
-      m_GuidHigh: 6539677759825617417
+      m_GuidLow: 13854463159007400293
+      m_GuidHigh: 16554659225652401291
     m_Size: {x: 0, y: 0}
     m_SpecifySize: 0
     m_Name: HuskyDog
-    m_Texture: {fileID: 2800000, guid: b3032c423dac7ae409a2ed1b469ac15a, type: 3}
+    m_Texture: {fileID: 2800000, guid: ca5f5165f0d6c0448b94a7fadaf6bde5, type: 3}
   - m_SerializedGuid:
       m_GuidLow: 5620594387274000190
       m_GuidHigh: 16239494411674538631

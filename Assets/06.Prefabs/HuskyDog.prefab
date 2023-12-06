@@ -401,8 +401,8 @@ MonoBehaviour:
     type: 3}
   mouseHold: {fileID: 7037934888224173948}
   state: 0
-  runSpeed: 30
-  walkSpeed: 10
+  runSpeed: 6
+  walkSpeed: 3
   isAlive: 1
   headRigObj: {fileID: 191414151725730357}
   lookTarget: {fileID: 5665537404596126924}

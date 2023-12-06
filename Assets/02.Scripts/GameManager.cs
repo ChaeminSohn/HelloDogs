@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI textLv;
     public static GameManager instance;
-    public static float intimacy = 0;
+    public static float intimacy = 0.7f;
     public static bool isPause;
     public static int friendLv = 1;
 

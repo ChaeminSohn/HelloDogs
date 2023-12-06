@@ -41,6 +41,7 @@ public class DogCtrl : MonoBehaviour {
     public GameObject followTarget;
     private Transform followTargetTr;
     private GameObject dogBowl;
+    private GameObject dogFood;
     public GameObject head;
     public GameObject body;
     void Awake()
@@ -49,7 +50,6 @@ public class DogCtrl : MonoBehaviour {
         anim = GetComponent<Animator>();
         headRig = headRigObj.GetComponentInChildren<Rig>();
         startingPoint = GameObject.FindGameObjectWithTag("StartPoint");
-        startingPoint.transform.position = this.transform.position;
         anim.SetBool(hashidle, true);   
         anim.SetBool(hashStand, true);
         anim.SetInteger(hashIdleIndex, -1);
@@ -104,9 +104,10 @@ public class DogCtrl : MonoBehaviour {
                 anim.SetInteger(hashIdleIndex, -2);
                 followTarget = GameObject.FindGameObjectWithTag("Ball");
                 followTargetTr = followTarget.transform;
-                anim.SetBool(hashidle, false);
                 headRig.weight = 0.0f;
-                anim.SetBool(hashRun, true);
+                startingPoint.transform.position = this.transform.position;
+                
+               
                 break;
             case "Eat":
                 if (anim.GetInteger(hashIdleIndex) == -2)
@@ -114,11 +115,13 @@ public class DogCtrl : MonoBehaviour {
                 dogBowl = GameObject.FindGameObjectWithTag("Bowl");
                 if (dogBowl != null)
                 {
+                    dogFood = GameObject.FindGameObjectWithTag("DogFood");
                     state = State.EAT;
                     anim.SetInteger(hashIdleIndex, -2);
                     anim.SetBool(hashidle, false);
                     anim.SetBool(hashEat, true);
                     headRig.weight = 0.0f;
+                    startingPoint.transform.position = this.transform.position;
                 }
                 break;
         }
@@ -171,7 +174,7 @@ public class DogCtrl : MonoBehaviour {
                 case State.LIE:
                     if (!anim.GetBool(hashLie))
                     {
-                        anim.SetBool(hashidle, false);
+
                
                         anim.SetBool(hashLie, true);
                         anim.SetBool(hashidle, true);
@@ -192,7 +195,7 @@ public class DogCtrl : MonoBehaviour {
                 case State.LIEDOWN:
                     if (!anim.GetBool(hashLieDown))
                     {
-                        anim.SetBool(hashidle, false);
+
                
                         anim.SetBool(hashLieDown, true);
                         anim.SetBool(hashidle, true);
@@ -209,6 +212,7 @@ public class DogCtrl : MonoBehaviour {
                     }
                     break;
                 case State.WALK:
+                    yield return new WaitForSeconds(1.0f);
                     GameObject ballInstance = Instantiate(tennisBall, mouseHold.transform.position, Quaternion.identity);
                     ballInstance.transform.parent = mouseHold.transform;
                     if (!anim.GetBool(hashWalk))
@@ -234,9 +238,12 @@ public class DogCtrl : MonoBehaviour {
                     GameObject.FindGameObjectWithTag("ButtonControl")?.
                         GetComponentInChildren<ButtonCtrl>()?.BallButtonOn();
                     headRig.weight = 1.0f;
-                    GameManager.intimacy += 0.1f;
+                    GameManager.instance.changeSlider(0.1f);
                     break;
                 case State.RUN:
+                    yield return new WaitForSeconds(1.0f);
+                    anim.SetBool(hashidle, false);
+                    anim.SetBool(hashRun, true);
                     float run_distance = Vector3.Distance(followTargetTr.position, this.transform.position);
                     transform.LookAt(followTargetTr);
 
@@ -244,6 +251,7 @@ public class DogCtrl : MonoBehaviour {
                     {
                         transform.position = Vector3.Lerp(transform.position, followTargetTr.position, Time.deltaTime * runSpeed);
                         yield return new WaitForSeconds(0.1f);
+                        transform.LookAt(followTargetTr);
                         run_distance = Vector3.Distance(followTargetTr.position, this.transform.position);
                     }
                     anim.SetBool(hashRun, false);
@@ -263,6 +271,7 @@ public class DogCtrl : MonoBehaviour {
                     }
                     anim.SetBool(hashWalk, false);
                     yield return new WaitForSeconds(6.0f);
+                    dogFood.SetActive(false);
                     anim.SetBool(hashEat, false);
                     transform.LookAt(startingPoint.transform);
                     distance = Vector3.Distance(startingPoint.transform.position, this.transform.position);
@@ -272,14 +281,13 @@ public class DogCtrl : MonoBehaviour {
                         yield return new WaitForSeconds(0.1f);
                         distance = Vector3.Distance(startingPoint.transform.position, this.transform.position);
                     }
-                    
                     headRig.weight = 1.0f;
                     anim.SetBool(hashWalk, false);
                     anim.SetInteger(hashIdleIndex, -1);
                     anim.SetBool(hashidle, true);
-                    
+                   
                     state = State.STAND;
-                    GameManager.intimacy += 0.2f;
+                    GameManager.instance.changeSlider(0.2f);
                     break;
                 default:
                     break;

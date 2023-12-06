@@ -11,6 +11,7 @@ TagManager:
   - StartPoint
   - ButtonControl
   - Bowl
+  - DogFood
   layers:
   - Default
   - TransparentFX

@@ -26,7 +26,7 @@ public class DragShoot : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDra
     {
         defaultPos = defaultPosObj.transform.position;
         startPos = this.transform.position;
-        shootPower = 2f;
+        shootPower = 5.0f;
     }
 
     void Update()
@@ -50,7 +50,7 @@ public class DragShoot : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDra
 
     void IEndDragHandler.OnEndDrag(PointerEventData eventData)
     {
-        Shoot(releasePos - defaultPos);
+        Shoot(defaultPos - releasePos);
         gameObject.SetActive(false);
         this.transform.position = startPos;
     }
@@ -64,14 +64,13 @@ public class DragShoot : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDra
         //ballRb.velocity = new Vector3(cameraTransform.forward.x, 0 , cameraTransform.forward.z)
            // * force.y * shootPower;
         ballRb.AddForce(cameraTransform.forward * shootPower, ForceMode.VelocityChange);
-        Invoke("StopBall", 3.0f);
+        mainDog.GetComponent<DogCtrl>()?.GiveOrder("Fetch");
+        InvokeRepeating("StopBall", 5.0f, 3);
     }
 
     void StopBall()
     {
-        ballRb.velocity = Vector3.zero;
-        Debug.Log("done");
-        mainDog.GetComponent<DogCtrl>()?.GiveOrder("Fetch");
-        
+        if(ball != null)
+            ballRb.velocity = Vector3.zero;       
     }
 }
